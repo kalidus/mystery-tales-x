@@ -62,6 +62,8 @@ export interface RoomDef {
   id: RoomId;
   name: string;
   bgTextureKey: string;
+  /** Ancho del mundo para scroll horizontal (base de diseño: 1920). */
+  worldWidth?: number;
   defaultSpawn: { x: number; y: number };
   walkableBounds: { top: number; bottom: number };
   hotspots: HotspotDef[];

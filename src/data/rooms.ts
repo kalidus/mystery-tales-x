@@ -6,6 +6,7 @@ const ROOM_MUELLE: RoomDef = {
   id: 'muelle',
   name: 'El Muelle',
   bgTextureKey: TEX.BG_MUELLE,
+  worldWidth: 3000,
   defaultSpawn: { x: 340, y: 960 },
   walkableBounds: { top: 820, bottom: 1030 },
   hotspots: [
@@ -133,6 +134,7 @@ const ROOM_TABERNA: RoomDef = {
   id: 'taberna',
   name: 'Taberna El Marinero Ahogado',
   bgTextureKey: TEX.BG_TABERNA,
+  worldWidth: 2800,
   defaultSpawn: { x: 320, y: 1005 },
   // Banda estrecha en Y: el suelo del fondo es casi plano; un `top` bajo permitía
   // caminar “por el aire” al hacer clic arriba (clampWalkY usaba ese mínimo).
@@ -202,6 +204,7 @@ const ROOM_CALLEJON: RoomDef = {
   id: 'callejon',
   name: 'Callejón de la Tienda Vudú',
   bgTextureKey: TEX.BG_CALLEJON,
+  worldWidth: 2800,
   defaultSpawn: { x: 1760, y: 940 },
   walkableBounds: { top: 820, bottom: 1020 },
   hotspots: [

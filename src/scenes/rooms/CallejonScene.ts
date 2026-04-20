@@ -20,7 +20,7 @@ export class CallejonScene extends BaseRoomScene {
     // para indicar visualmente la interacción disponible.
     if (!InventorySystem.instance.has('frasco_vacio')) {
       const brillo = this.add
-        .image(440, 870, TEX.CALLEJON_FRASCO)
+        .image(this.scaleRoomX(440), 870, TEX.CALLEJON_FRASCO)
         .setDepth(DEPTH.BG_PROPS + 1)
         .setAlpha(0.9)
         .setScale(1.6);

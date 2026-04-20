@@ -20,7 +20,7 @@ export class MuelleScene extends BaseRoomScene {
     // Ectoplasma (estado dependiente de flags). Se coloca sobre el muelle pintado.
     if (!SaveSystem.instance.hasFlag('ectoplasma_recogido')) {
       this.ectoplasma = this.add
-        .image(950, 1005, TEX.MUELLE_ECTOPLASMA)
+        .image(this.scaleRoomX(950), 1005, TEX.MUELLE_ECTOPLASMA)
         .setDepth(DEPTH.BG_PROPS)
         .setScale(1.1);
       this.tweens.add({
@@ -40,7 +40,7 @@ export class MuelleScene extends BaseRoomScene {
         ease: 'Sine.easeInOut'
       });
     } else {
-      this.add.image(950, 1005, TEX.MUELLE_ECTOPLASMA_VACIO).setDepth(DEPTH.BG_PROPS);
+      this.add.image(this.scaleRoomX(950), 1005, TEX.MUELLE_ECTOPLASMA_VACIO).setDepth(DEPTH.BG_PROPS);
     }
 
     // Guardián espectral (requerido por la historia). Usa la imagen pixel-art
@@ -51,7 +51,7 @@ export class MuelleScene extends BaseRoomScene {
     const baseScale = hasImg ? (this.registry.get(`${TEX.MUELLE_GUARDIAN_IMG}_scale`) as number ?? 0.5) : 1;
     const guardianAlpha = SaveSystem.instance.hasFlag('visto_guardian') ? 0.65 : 0.92;
     const guardian = this.add
-      .image(1430, 930, guardianKey)
+      .image(this.scaleRoomX(1430), 930, guardianKey)
       .setOrigin(0.5, 1)
       .setScale(baseScale)
       .setDepth(DEPTH.ENTITIES - 1)
@@ -75,13 +75,13 @@ export class MuelleScene extends BaseRoomScene {
 
     // Capa extra de niebla animada (por encima del bg pintado) para dar vida.
     const fog = this.add
-      .image(GAME_WIDTH / 2, 680, TEX.NIEBLA)
+      .image(this.getWorldWidth() / 2, 680, TEX.NIEBLA)
       .setDepth(DEPTH.FOG)
       .setAlpha(0.35)
-      .setScale(1.4, 1);
+      .setScale(this.getWorldWidth() / GAME_WIDTH, 1);
     this.tweens.add({
       targets: fog,
-      x: GAME_WIDTH / 2 + 220,
+      x: this.getWorldWidth() / 2 + this.scaleRoomX(220),
       duration: 22000,
       yoyo: true,
       repeat: -1,
@@ -91,7 +91,7 @@ export class MuelleScene extends BaseRoomScene {
     // Viñeta verde muy sutil.
     const vignette = this.add.graphics().setDepth(DEPTH.FOG + 1);
     vignette.fillStyle(PALETTE.verdeEctoSombra, 0.05);
-    vignette.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    vignette.fillRect(0, 0, this.getWorldWidth(), GAME_HEIGHT);
   }
 
   protected override onFirstEnter(): void {

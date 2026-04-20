@@ -46,19 +46,20 @@ export abstract class BaseRoomScene extends Phaser.Scene {
 
   create(): void {
     this.roomDef = ROOMS[this.roomId];
+    const worldWidth = this.getWorldWidth();
 
-    // Fondo principal - estiramos la imagen pintada para ocupar 1920x1080 con filtro lineal.
+    // Fondo principal: ocupa todo el ancho del mundo para permitir scroll horizontal.
     this.add
-      .image(GAME_WIDTH / 2, GAME_HEIGHT / 2, this.roomDef.bgTextureKey)
+      .image(worldWidth / 2, GAME_HEIGHT / 2, this.roomDef.bgTextureKey)
       .setDepth(DEPTH.BG)
-      .setDisplaySize(GAME_WIDTH, GAME_HEIGHT);
+      .setDisplaySize(worldWidth, GAME_HEIGHT);
 
     // Hook para subclases (props animados, niebla, etc.)
     this.decorateBackground();
 
     // Spawn de Xavier
     const savedData = SaveSystem.instance.getData();
-    let spawnX = this.roomDef.defaultSpawn.x;
+    let spawnX = this.scaleRoomX(this.roomDef.defaultSpawn.x);
     let spawnY = this.roomDef.defaultSpawn.y;
 
     if (this.incomingData?.fromSave) {
@@ -72,6 +73,7 @@ export abstract class BaseRoomScene extends Phaser.Scene {
     spawnY = this.clampWalkY(spawnY);
 
     this.xavier = new Xavier(this, spawnX, spawnY);
+    this.setupCamera();
 
     // Asegura que UIScene está activa
     if (!this.scene.isActive(SCENE.UI)) {
@@ -108,12 +110,28 @@ export abstract class BaseRoomScene extends Phaser.Scene {
     /* override en subclases */
   }
 
+  protected getWorldWidth(): number {
+    return this.roomDef.worldWidth ?? GAME_WIDTH;
+  }
+
+  protected scaleRoomX(x: number, roomId: RoomId = this.roomId): number {
+    const roomWidth = ROOMS[roomId].worldWidth ?? GAME_WIDTH;
+    return Math.round((x / GAME_WIDTH) * roomWidth);
+  }
+
+  private setupCamera(): void {
+    const cam = this.cameras.main;
+    cam.setBounds(0, 0, this.getWorldWidth(), GAME_HEIGHT);
+    cam.startFollow(this.xavier, true, 0.12, 0.12);
+  }
+
   protected onFirstEnter(): void {
     /* override opcional - diálogo de entrada la primera vez. */
   }
 
   private buildHotspots(): void {
-    for (const def of this.roomDef.hotspots) {
+    for (const baseDef of this.roomDef.hotspots) {
+      const def = this.scaleHotspot(baseDef);
       if (this.isHotspotHidden(def)) continue;
       const hs = new Hotspot(this, def);
       hs.on('pointerdown', (pointer: Phaser.Input.Pointer, _lx: number, _ly: number, evt: Phaser.Types.Input.EventData) => {
@@ -130,6 +148,33 @@ export abstract class BaseRoomScene extends Phaser.Scene {
       });
       this.hotspots.push(hs);
     }
+  }
+
+  private scaleHotspot(def: HotspotDef): HotspotDef {
+    const scaleX = this.getWorldWidth() / GAME_WIDTH;
+    const scaledAction = this.scaleHotspotAction(def.action);
+    const scaledItemUse = def.itemUse
+      ? Object.fromEntries(
+          Object.entries(def.itemUse).map(([item, action]) => [item, action ? this.scaleHotspotAction(action) : action])
+        )
+      : undefined;
+
+    return {
+      ...def,
+      x: Math.round(def.x * scaleX),
+      width: Math.max(1, Math.round(def.width * scaleX)),
+      interactX: Math.round(def.interactX * scaleX),
+      action: scaledAction,
+      itemUse: scaledItemUse
+    };
+  }
+
+  private scaleHotspotAction(action: HotspotAction): HotspotAction {
+    if (action.kind !== 'exit') return action;
+    return {
+      ...action,
+      spawnX: this.scaleRoomX(action.spawnX, action.to)
+    };
   }
 
   private isHotspotHidden(def: HotspotDef): boolean {
@@ -173,7 +218,7 @@ export abstract class BaseRoomScene extends Phaser.Scene {
       InventorySystem.instance.deselect();
     }
 
-    const tx = Phaser.Math.Clamp(wx, 40, GAME_WIDTH - 40);
+    const tx = Phaser.Math.Clamp(wx, 40, this.getWorldWidth() - 40);
     const ty = this.clampWalkY(wy);
 
     this.xavier.walkTo(tx, ty, () => {

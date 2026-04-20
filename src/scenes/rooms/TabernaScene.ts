@@ -21,7 +21,7 @@ export class TabernaScene extends BaseRoomScene {
     const tabKey = hasImg ? TEX.TABERNA_TABERNERO_IMG : TEX.TABERNA_TABERNERO;
     const baseScale = hasImg ? (this.registry.get(`${TEX.TABERNA_TABERNERO_IMG}_scale`) as number ?? 0.5) : 1;
     const tab = this.add
-      .image(990, 720, tabKey)
+      .image(this.scaleRoomX(990), 720, tabKey)
       .setOrigin(0.5, 1)
       .setScale(baseScale)
       .setDepth(DEPTH.ENTITIES - 1);
@@ -37,7 +37,7 @@ export class TabernaScene extends BaseRoomScene {
     // Titileo suave del halo de la lámpara existente en el fondo.
     const lamp = this.add.graphics().setDepth(DEPTH.FOG);
     lamp.fillStyle(0xf9e58c, 0.1);
-    lamp.fillCircle(512, 280, 180);
+    lamp.fillCircle(this.scaleRoomX(512), 280, 180);
     this.tweens.add({
       targets: lamp,
       alpha: 0.6,
