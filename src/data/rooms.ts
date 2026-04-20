@@ -112,7 +112,7 @@ const ROOM_MUELLE: RoomDef = {
       interactX: 1780,
       interactY: 970,
       cursor: 'exit',
-      action: { kind: 'exit', to: 'taberna', spawnX: 280, spawnY: 920 }
+      action: { kind: 'exit', to: 'taberna', spawnX: 280, spawnY: 1005 }
     },
     {
       id: 'exit_callejon',
@@ -133,8 +133,10 @@ const ROOM_TABERNA: RoomDef = {
   id: 'taberna',
   name: 'Taberna El Marinero Ahogado',
   bgTextureKey: TEX.BG_TABERNA,
-  defaultSpawn: { x: 320, y: 920 },
-  walkableBounds: { top: 820, bottom: 1020 },
+  defaultSpawn: { x: 320, y: 1005 },
+  // Banda estrecha en Y: el suelo del fondo es casi plano; un `top` bajo permitía
+  // caminar “por el aire” al hacer clic arriba (clampWalkY usaba ese mínimo).
+  walkableBounds: { top: 968, bottom: 1055 },
   hotspots: [
     {
       id: 'exit_muelle',
@@ -144,7 +146,7 @@ const ROOM_TABERNA: RoomDef = {
       height: 400,
       label: 'Salida al muelle',
       interactX: 280,
-      interactY: 940,
+      interactY: 1010,
       cursor: 'exit',
       action: { kind: 'exit', to: 'muelle', spawnX: 1780, spawnY: 970 }
     },
@@ -156,7 +158,7 @@ const ROOM_TABERNA: RoomDef = {
       height: 130,
       label: 'Tabernero zombi',
       interactX: 960,
-      interactY: 950,
+      interactY: 1020,
       cursor: 'interact',
       hiddenIfFlag: 'hablado_tabernero',
       action: {
@@ -173,7 +175,7 @@ const ROOM_TABERNA: RoomDef = {
       height: 130,
       label: 'Tabernero zombi',
       interactX: 960,
-      interactY: 950,
+      interactY: 1020,
       cursor: 'interact',
       onlyIfFlag: 'hablado_tabernero',
       action: {
@@ -189,7 +191,7 @@ const ROOM_TABERNA: RoomDef = {
       height: 50,
       label: 'Botella vacía',
       interactX: 1200,
-      interactY: 920,
+      interactY: 998,
       cursor: 'interact',
       action: { kind: 'dialogue', lines: DIALOGUES.taberna.botella }
     }

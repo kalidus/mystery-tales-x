@@ -536,20 +536,54 @@ export function chromaKeyBatchUnifiedCrop(
 ): { width: number; height: number } {
   const { tolerance = 60, padding = 2 } = options;
 
-  const killSpill = (d: Uint8ClampedArray): void => {
+  const killSpill = (d: Uint8ClampedArray, w: number, h: number): void => {
     for (let p = 0; p < d.length / 4; p++) {
       const i = p * 4;
       if (d[i + 3] === 0) continue;
       const r = d[i];
       const g = d[i + 1];
       const b = d[i + 2];
-      if (r > 165 && b > 165 && g < 130 && g < (r + b) / 2 - 35) {
+      if (r > 165 && b > 165 && g < 145 && g < (r + b) / 2 - 28) {
         d[i + 3] = 0;
         continue;
       }
       const dist = Math.max(Math.abs(r - keyR), Math.abs(g - keyG), Math.abs(b - keyB));
       if (dist <= tolerance + 45 && g < Math.min(r, b) - 10 && r + b > 320) {
         d[i + 3] = 0;
+      }
+    }
+
+    const transparentNeighbors8 = (px: number, py: number): number => {
+      let c = 0;
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          if (dx === 0 && dy === 0) continue;
+          const nx = px + dx;
+          const ny = py + dy;
+          if (nx < 0 || nx >= w || ny < 0 || ny >= h) {
+            c++;
+            continue;
+          }
+          if (d[(ny * w + nx) * 4 + 3] === 0) c++;
+        }
+      }
+      return c;
+    };
+
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const p = y * w + x;
+        const i = p * 4;
+        if (d[i + 3] === 0) continue;
+        const r = d[i];
+        const g = d[i + 1];
+        const b = d[i + 2];
+        const dist = Math.max(Math.abs(r - keyR), Math.abs(g - keyG), Math.abs(b - keyB));
+        const pinkEdge =
+          (r > 118 && b > 118 && g < (r + b) * 0.5 && dist <= tolerance + 75) ||
+          (dist <= tolerance + 35 && g < Math.min(r, b) + 20);
+        if (!pinkEdge) continue;
+        if (transparentNeighbors8(x, y) >= 3) d[i + 3] = 0;
       }
     }
   };
@@ -590,7 +624,7 @@ export function chromaKeyBatchUnifiedCrop(
       const db = Math.abs(data[i + 2] - keyB);
       if (Math.max(dr, dg, db) <= tolerance) data[i + 3] = 0;
     }
-    killSpill(data);
+    killSpill(data, w, h);
 
     for (let p = 0; p < w * h; p++) {
       if (data[p * 4 + 3] === 0) continue;

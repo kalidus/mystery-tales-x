@@ -158,16 +158,23 @@ export abstract class BaseRoomScene extends Phaser.Scene {
   private onPointerDown(pointer: Phaser.Input.Pointer): void {
     if (this.busy) return;
     if (DialogueSystem.instance.isActive) return;
-    if (pointer.y < this.roomDef.walkableBounds.top - 20) return;
-    if (pointer.y > GAME_HEIGHT - 120) return; // reservado a la UI
+
+    const wx = pointer.worldX;
+    const wy = pointer.worldY;
+
+    // Los slots/iconos del inventario son interactivos y capturan el clic; el
+    // fondo de la barra no lo es, así que esos clics llegan aquí. Antes se
+    // descartaba todo wy > 960 “por la UI”, pero el suelo del bar está ~970+,
+    // dejando casi ninguna zona clicable. Solo ignoramos el borde inferior.
+    if (wy > GAME_HEIGHT - 6) return;
 
     // Deselecciona item al clicar suelo vacío.
     if (InventorySystem.instance.getSelected()) {
       InventorySystem.instance.deselect();
     }
 
-    const tx = Phaser.Math.Clamp(pointer.worldX, 40, GAME_WIDTH - 40);
-    const ty = this.clampWalkY(pointer.worldY);
+    const tx = Phaser.Math.Clamp(wx, 40, GAME_WIDTH - 40);
+    const ty = this.clampWalkY(wy);
 
     this.xavier.walkTo(tx, ty, () => {
       SaveSystem.instance.updateXavierPos(this.xavier.x, this.xavier.y);

@@ -183,10 +183,9 @@ export class PreloadScene extends Phaser.Scene {
       this.anims.create({
         key: ANIM.XAVIER_IDLE,
         frames: [
-          { key: TEX.XAVIER_IDLE_1 },
-          { key: TEX.XAVIER_IDLE_2 }
+          { key: TEX.XAVIER_IDLE_1, duration: 1300 },
+          { key: TEX.XAVIER_IDLE_2, duration: 1300 }
         ],
-        frameRate: 1.8,
         repeat: -1
       });
     }
