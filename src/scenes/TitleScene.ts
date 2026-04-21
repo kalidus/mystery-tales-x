@@ -2,11 +2,13 @@ import * as Phaser from 'phaser';
 import { DEPTH, GAME_HEIGHT, GAME_WIDTH, PALETTE, TEX } from '../config/gameConfig';
 import { SCENE } from '../config/constants';
 import { DIALOGUES } from '../data/dialogues';
+import { AudioManager } from '../systems/AudioManager';
 import { SaveSystem } from '../systems/SaveSystem';
 
 export class TitleScene extends Phaser.Scene {
   private newGameText!: Phaser.GameObjects.Text;
   private continueText!: Phaser.GameObjects.Text;
+  private musicToggleText!: Phaser.GameObjects.Text;
   private hasSave = false;
 
   constructor() {
@@ -16,6 +18,8 @@ export class TitleScene extends Phaser.Scene {
   create(): void {
     this.hasSave = SaveSystem.instance.hasSaveOnDisk();
     this.cameras.main.fadeIn(400, 0, 0, 0);
+    AudioManager.instance.registerGeneratedTitleTheme();
+    AudioManager.instance.playMusic('title_theme');
 
     // Fondo pintado (pixel art 1024x576 estirado a 1920x1080 con filtro lineal).
     this.add
@@ -103,6 +107,18 @@ export class TitleScene extends Phaser.Scene {
       this.continueText.disableInteractive();
     }
 
+    this.musicToggleText = this.makeMenuText(
+      GAME_WIDTH / 2,
+      menuY + gap * 2,
+      this.getMusicToggleLabel(),
+      () => {
+        const nextEnabled = !AudioManager.instance.isMusicEnabled();
+        AudioManager.instance.setMusicEnabled(nextEnabled);
+        if (nextEnabled) AudioManager.instance.playMusic('title_theme');
+        this.musicToggleText.setText(this.getMusicToggleLabel());
+      }
+    );
+
     // Hint
     this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT - 80, 'v0.1 - Acto 1 demo', {
@@ -119,6 +135,12 @@ export class TitleScene extends Phaser.Scene {
         SaveSystem.instance.newGame();
         this.startGame(false);
       }
+    });
+    this.input.once('pointerdown', () => {
+      if (AudioManager.instance.isMusicEnabled()) AudioManager.instance.playMusic('title_theme');
+    });
+    this.input.keyboard?.once('keydown', () => {
+      if (AudioManager.instance.isMusicEnabled()) AudioManager.instance.playMusic('title_theme');
     });
 
     // Silueta de Xavier pequeña a la izquierda (pixel art real recortado).
@@ -157,7 +179,12 @@ export class TitleScene extends Phaser.Scene {
     return t;
   }
 
+  private getMusicToggleLabel(): string {
+    return AudioManager.instance.isMusicEnabled() ? 'Música: ON' : 'Música: OFF';
+  }
+
   private startGame(fromSave: boolean): void {
+    AudioManager.instance.stopMusic();
     const cam = this.cameras.main;
     cam.fadeOut(400, 0, 0, 0);
     cam.once('camerafadeoutcomplete', () => {
